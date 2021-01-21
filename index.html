@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+ <html>
+ <head>
+   <body>
+    <div id="container">
+
+    </div>
+   <script>
+    window.tree = {};
+  const proxyUrl='https://cors-anywhere.herokuapp.com/';
+fetch( proxyUrl+ 'https://www.google.com/basepages/producttype/taxonomy.en-US.txt' )
+.then(e=>e.text())
+.then(req => {
+    data_list = req.split('\n');
+
+    num_of_select = 0;
+    tree_map = {};
+    result_html = "";
+    for(var idx = 0; idx < data_list.length; idx ++) {
+      nodes = data_list[idx].split('>');
+      num_of_select = Math.max(num_of_select, nodes.length);
+      for(index = 0; index < nodes.length; index ++) {
+        if(nodes[index].trim() in tree_map) {
+          for(i = 0; i < nodes[index].trim().length +1; i ++) {
+            result_html += "&nbsp;";
+          }
+        } else {
+          result_html += nodes[index].trim();
+          tree_map[nodes[index].trim()] = {};
+        }
+      }
+      result_html += "<br>";
+      insert(0, nodes, tree);
+    }
+
+
+    for(var idx = 0; idx < num_of_select; idx ++) {
+      var select = document.createElement('select');
+      select.id = "select-"+idx;
+      next_level_count = idx + 1;
+      select.setAttribute('onchange', 'show_next_dropdown(this.value,' +  next_level_count +')');
+      document.getElementById('container').append(select);
+    }
+
+    var html = "";
+    for(var key in tree) {
+       html += "<option value='" + key + "'>" + key + '</option>';
+    }
+    // document.getElementById("slect-0").innerHTML=html;
+    document.getElementById("select-0").innerHTML = html;
+
+    function insert(index, values, tree) {
+        if(index == values.length) {
+          return;
+        }
+        if(!(values[index].trim() in tree)) {
+          tree[values[index].trim()] = {};
+        }
+        insert(index + 1, values, tree[values[index].trim()]);
+    }
+
+    // document.write(result_html);
+});
+
+function show_next_dropdown(node, next_dropdown_id) {
+  var new_tree = JSON.parse(JSON.stringify(tree));
+  for(idx = 0; idx < next_dropdown_id; idx ++) {
+    current_node = document.getElementById("select-"+idx).value;
+    console.log(new_tree[current_node]);
+    new_tree = JSON.parse(JSON.stringify(new_tree[current_node]));
+  }
+
+    var html = "";
+    for(var key in new_tree) {
+       html += "<option value='" + key + "'>" + key + '</option>';
+    }
+
+    document.getElementById("select-"+next_dropdown_id).innerHTML = html;
+
+}
+   </script>
+    <body>
+    </head>
+  </html>
